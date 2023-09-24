@@ -16,12 +16,19 @@ class Config:
 face_classifier = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 person_classifier = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_fullbody.xml")
 
+@dataclasses.dataclass(slots=True)
+class ProcessedImage:
+    image: np.array
+    object_name: str
+    object_bounding_boxes: list[tuple]
+    detector_name: str
+    metadata: dict[str, Any]
 
 class BaseObjectDetector:
     detector_name: str = None
     target_object_name: str = None
 
-    def process(self, image: np.array) -> (np.array, dict[str, Any]):
+    def process(self, image: np.array) -> ProcessedImage:
         """Returns processed image and metadata dict"""
         pass
 
@@ -30,7 +37,7 @@ class PersonHAARClassifier(BaseObjectDetector):
     detector_name = "haar_classifier"
     target_object_name = "person"
 
-    def process(self, image: np.array) -> (np.array, dict[str, Any]):
+    def process(self, image: np.array) -> ProcessedImage:
         """Returns processed image and metadata dict"""
         img_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -44,7 +51,13 @@ class PersonHAARClassifier(BaseObjectDetector):
 
         # displaying image with bounding box
         # cv2.imshow('face_detect', img)
-        return image, {"num_objects": len(objs), "object_bboxes": objs}
+        return ProcessedImage(
+                        image=image,
+                        object_name=self.target_object_name,
+                        object_bounding_boxes=[(x, y, w, h) for (x, y, w, h) in objs], 
+                        detector_name=self.detector_name,
+                        metadata={}
+                    )
 
 @dataclass(config=Config)
 class VideoStream:
@@ -53,7 +66,7 @@ class VideoStream:
     capture_fps: float
     url: str = None
     stream: CamGear = None
-    object_detectors: list[BaseObjectDetector]
+    object_detectors: list[BaseObjectDetector] = None
 
     def __post_init__(self):
         base_url = "http://youtube.com"
@@ -73,10 +86,16 @@ class VideoStream:
             )
         
     #TODO make async
-    @staticmethod
-    def process_frame(frame) -> np.array:
+    # @staticmethod
+    def process_frame(self, frame) -> list[ProcessedImage]:
+        processed_frames = [
+            detector.process(frame) 
+            for detector in self.object_detectors
+        ]
 
-        pass
+        return processed_frames
+
+        
 
     def start_stream(self):
         self.stream.start()
@@ -90,9 +109,10 @@ class VideoStream:
                 break
             
             # do something with frame here
-            processed_frame = self.process_frame(frame)
+            processed_frames = self.process_frame(frame)
             
-            cv2.imshow("Output Frame", processed_frame)
+            # cv2.imshow("Output Frame", processed_frame)
+            cv2.imshow(processed_frames[0].detector_name, processed_frames[0].image)
 
             cv2.waitKey(int(1e3/self.capture_fps)) #
 
@@ -116,7 +136,8 @@ for video_id in video_ids:
     stream = VideoStream(
         streaming_service="youtube",
         video_id=video_id,
-        capture_fps=24.0
+        capture_fps=24.0,
+        object_detectors=[PersonHAARClassifier]
     )
 
     try:
