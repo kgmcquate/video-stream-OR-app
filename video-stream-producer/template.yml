@@ -20,11 +20,11 @@ Parameters:
 
   SecurityGroupIds:
     Type: CommaDelimitedList
-    Default: sg-06ccb1d8e6918a05c
+    Default: sg-00467e8ac3c53cb3f
 
   SubnetIds:
     Type: CommaDelimitedList
-    Default: subnet-07e2023c25351b29b
+    Default: subnet-0cdc957115446f72d
 
 Resources:
   ETLJobTrigger:
