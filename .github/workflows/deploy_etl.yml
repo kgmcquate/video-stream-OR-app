@@ -38,9 +38,9 @@ jobs:
 
 
       - name: build and push
-        working-directory: ./video-stream-producer
         uses: vitr/actions-build-and-upload-to-ecs@master
         with:
+          path: ./video-stream-producer
           access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           account_id: ${{ env.AWS_ACCOUNT_ID }}
