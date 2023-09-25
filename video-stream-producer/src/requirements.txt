@@ -1,5 +1,5 @@
 pydantic
-urllib
+urllib3
 boto3
 vidgear
 fastavro
