@@ -8,6 +8,8 @@ COPY ./src/app/requirements.txt ./requirements.txt
 
 COPY ./dist/* ./dist/
 
+# RUN sudo apt-get install gstreamer-1.0 gstreamer1.0-dev
+
 # install python 3
 # RUN yum install -y gcc openssl-devel bzip2-devel libffi-devel tar gzip wget make
 # RUN wget https://www.python.org/ftp/python/3.9.0/Python-3.10.0.tgz && \
