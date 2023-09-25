@@ -1,0 +1,7 @@
+pydantic
+urllib
+boto3
+vidgear
+fastavro
+confluent-kafka
+numpy

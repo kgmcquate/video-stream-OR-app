@@ -1,0 +1,94 @@
+name: Deploy SAM
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  AWS_REGION: "us-east-1"
+  AWS_ACCOUNT_ID: "117819748843"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy_video-stream-producer_docker_image:
+    name: Deploy video-stream-producer Docker Image
+    runs-on: ubuntu-latest
+    environment: production
+    container:
+      image: public.ecr.aws/sam/build-python3.7:latest #continuumio/miniconda3 #public.ecr.aws/sam/build-python3.9:latest #continuumio/miniconda3 #public.ecr.aws/sam/build-python3.7:latest #public.ecr.aws/sam/build-python3.9:latest #amazonlinux:2 #
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Build python package
+        working-directory: ./video-stream-producer
+        run: |
+          pip install venv-pack awscli build
+          python -m build --sdist ./
+
+
+      - name: build and push
+        working-directory: ./video-stream-producer
+        uses: vitr/actions-build-and-upload-to-ecs@master
+        with:
+          access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          account_id: ${{ env.AWS_ACCOUNT_ID }}
+          repo: emr-serverless
+          region: ${{ env.AWS_REGION }}
+          tags: video-stream-producer
+          create_repo: false
+         
+
+      - name: Copy Python files to S3 deployment zone
+        working-directory: ./video-stream-producer
+        run: |
+          aws s3 cp spark_entrypoint.py s3://deployment-zone-${AWS_ACCOUNT_ID}/video-stream-producer/
+
+  deploy_video-stream-producer_sam:
+    name: Deploy SAM template
+    runs-on: ubuntu-latest
+    environment: production
+    container:
+      image: public.ecr.aws/sam/build-python3.9:latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+
+    - name: SAM build
+      working-directory: ./video-stream-producer
+      run: sam build
+      
+    - name: SAM deploy
+      working-directory: ./video-stream-producer
+      run: >
+        sam deploy 
+        --no-fail-on-empty-changeset
+        --on-failure DELETE
+        --stack-name video-stream-producer
+        --region ${AWS_REGION}
+        --capabilities CAPABILITY_AUTO_EXPAND
+        --s3-bucket deployment-zone-${AWS_ACCOUNT_ID}
+        --s3-prefix ${{ github.event.repository.name }}
+
+
+

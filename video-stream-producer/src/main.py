@@ -11,6 +11,11 @@ import json
 import boto3
 import socket
 
+import fastavro
+from fastavro import writer, reader, parse_schema
+import io
+from confluent_kafka import Producer
+
 # import libraries
 from vidgear.gears import CamGear
 import cv2
@@ -38,11 +43,19 @@ raw_video_frames_topic_name = "raw-livestream-frames"
 
 
 
+STREAM_RESOLUTION = "360p"
 
-from classifiers import HAARClassifier, BaseObjectDetector, ProcessedImage
 
 class Config:
     arbitrary_types_allowed = True
+    
+def log_kafka_message_delivery(err, msg):
+    """ Called once for each message produced to indicate delivery result.
+    Triggered by poll() or flush(). """
+    if err is not None:
+        print('Message delivery failed: {}'.format(err))
+    else:
+        print('Message delivered to {}. Partition: [{}]'.format(msg.topic(), msg.partition()))
 
 
 @dataclasses.dataclass #(config=Config)
@@ -52,7 +65,6 @@ class VideoStream:
     capture_fps: float
     url: str = None
     stream: CamGear = None
-    object_detectors: list[BaseObjectDetector] = None
 
     def __post_init__(self):
         base_url = "http://youtube.com"
@@ -67,18 +79,8 @@ class VideoStream:
                 stream_mode = True,
                 # backend=cv2.CAP_GSTREAMER 
                 # logging=True
-                **{"STREAM_RESOLUTION": "360p"}
+                **{"STREAM_RESOLUTION": STREAM_RESOLUTION}
             )
-        
-    #TODO make async
-    # @staticmethod
-    def process_frame(self, frame) -> list[ProcessedImage]:
-        processed_frames = [
-            detector.process(image=frame) 
-            for detector in self.object_detectors
-        ]
-
-        return processed_frames
 
 
     def start_stream(self):
@@ -119,13 +121,6 @@ class VideoStream:
 
 
     def write_frame_to_kafka(self, frame: np.array, timestamp: datetime.datetime):
-        def log_kafka_message_delivery(err, msg):
-            """ Called once for each message produced to indicate delivery result.
-            Triggered by poll() or flush(). """
-            if err is not None:
-                print('Message delivery failed: {}'.format(err))
-            else:
-                print('Message delivered to {}. Partition: [{}]'.format(msg.topic(), msg.partition()))
 
         avro_schema = """
         {
@@ -153,12 +148,7 @@ class VideoStream:
         }
         """
 
-        import fastavro
-        from fastavro import writer, reader, parse_schema
-        import avro.schema
-        import io
-        from avro.datafile import DataFileReader, DataFileWriter
-        from avro.io import DatumReader, DatumWriter
+
 
         # schema = avro.schema.parse(avro_schema)
         # avro_writer = avro.io.DatumWriter(schema)
@@ -181,11 +171,9 @@ class VideoStream:
         )
 
         
-        from confluent_kafka import Producer
+        
         producer = Producer(kafka_producer_config)
         
-        producer.poll(0)
-
         producer.produce(
             topic=raw_video_frames_topic_name,
             value=bytes_writer.getvalue(),
@@ -208,27 +196,27 @@ class VideoStream:
         self.stop_stream()
 
 
+def main():
 
-video_ids = [
-    # "DHUnz4dyb54",
-    "w_DfTc7F5oQ"
-]
 
-for video_id in video_ids:
-    stream = VideoStream(
-        streaming_service="youtube",
-        video_id=video_id,
-        capture_fps=0.5,
-        object_detectors=[
-            #HAARClassifier(bounding_box_color=(0, 255,   0), haar_cascade_file = cv2.data.haarcascades + "haarcascade_fullbody.xml")
-        ]
-    )
+    video_ids = [
+        # "DHUnz4dyb54",
+        "w_DfTc7F5oQ"
+    ]
 
-    try:
-        stream.start_stream()
-    except Exception as e:
-        raise e
-    finally:
-        stream.stop_stream()
+    for video_id in video_ids:
+        stream = VideoStream(
+            streaming_service="youtube",
+            video_id=video_id,
+            capture_fps=0.5,
+        )
 
-cv2.destroyAllWindows()
+        try:
+            stream.start_stream()
+        except Exception as e:
+            raise e
+        finally:
+            stream.stop_stream()
+
+if __name__ == "__main__":
+    main()
