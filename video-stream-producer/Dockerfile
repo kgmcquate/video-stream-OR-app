@@ -8,7 +8,7 @@ COPY ./src/requirements.txt ./requirements.txt
 
 COPY ./dist/* ./dist/
 
-RUN yum install gstreamer-1.0 gstreamer1.0-dev
+# RUN yum install gstreamer-1.0 gstreamer1.0-dev
 
 # install python 3
 # RUN yum install -y gcc openssl-devel bzip2-devel libffi-devel tar gzip wget make
