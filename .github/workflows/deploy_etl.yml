@@ -56,7 +56,7 @@ jobs:
           aws s3 cp spark_entrypoint.py s3://deployment-zone-${AWS_ACCOUNT_ID}/video-stream-producer/
 
   deploy_video-stream-producer_sam:
-    name: Deploy SAM template
+    name: Deploy video-stream-producer SAM template
     runs-on: ubuntu-latest
     environment: production
     container:
