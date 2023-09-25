@@ -16,7 +16,7 @@ Parameters:
 
   DockerImageUri:
     Type: String
-    Default: 117819748843.dkr.ecr.us-east-1.amazonaws.com/emr-serverless:video-stream-consumer
+    Default: 117819748843.dkr.ecr.us-east-1.amazonaws.com/emr-serverless:video-stream-producer
 
   SecurityGroupIds:
     Type: CommaDelimitedList
