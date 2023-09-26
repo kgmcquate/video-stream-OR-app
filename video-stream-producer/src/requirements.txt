@@ -5,3 +5,4 @@ vidgear
 fastavro
 confluent-kafka
 numpy
+opencv-python
