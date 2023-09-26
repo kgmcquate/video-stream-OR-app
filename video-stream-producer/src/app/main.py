@@ -11,6 +11,9 @@ import json
 import boto3
 import socket
 
+from pyspark.sql import SparkSession
+from pyspark.sql.types import StructType, StructField, DateType, StringType, FloatType, IntegerType, TimestampType
+
 import fastavro
 from fastavro import writer, reader, parse_schema
 import io
@@ -83,7 +86,7 @@ class VideoStream:
             )
 
 
-    def start_stream(self):
+    def _start_stream(self):
 
         print(self.stream.framerate)
         # self.stream.ytv_metadata
@@ -186,6 +189,15 @@ class VideoStream:
         producer.poll(0)
 
 
+    def start_stream(self):
+        try:
+            self.start_stream()
+        except Exception as e:
+            raise e
+        finally:
+            self.stop_stream()
+
+
     def stop_stream(self):
         self.stream.stop()
 
@@ -196,27 +208,53 @@ class VideoStream:
         self.stop_stream()
 
 
-def main():
-
+def main(spark = SparkSession.builder.getOrCreate()):
+    from .database import get_jdbc_options
 
     video_ids = [
         # "DHUnz4dyb54",
         "w_DfTc7F5oQ"
     ]
 
-    for video_id in video_ids:
-        stream = VideoStream(
-            streaming_service="youtube",
-            video_id=video_id,
-            capture_fps=0.5,
+    video_ids = (
+        spark.read
+        .option("dbtable", "video_streams")
+        .options(**get_jdbc_options())
+        .format("jdbc")
+        .load()
+        .where("source_name = 'youtube' ")
+        .select(
+            # "source_name",
+            "id"
         )
+        .distinct()
+        .rdd
+        .map(lambda row: row.id)
+        .collect()
+    )
 
-        try:
-            stream.start_stream()
-        except Exception as e:
-            raise e
-        finally:
-            stream.stop_stream()
+    print(f"{video_ids=}")
+
+    (
+        spark.sparkContext
+        .parallelize(video_ids, len(video_ids))
+        .map(lambda id: VideoStream(
+                streaming_service="youtube",
+                video_id=id,
+                capture_fps=0.5,
+            )
+        )
+        .map(lambda stream: stream.start())
+    )
+
+    # for video_id in video_ids:
+    #     stream = VideoStream(
+    #         streaming_service="youtube",
+    #         video_id=video_id,
+    #         capture_fps=0.5,
+    #     )
+
+
 
 if __name__ == "__main__":
     main()
