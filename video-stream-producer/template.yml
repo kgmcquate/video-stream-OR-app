@@ -2,6 +2,10 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 
 Parameters:
+  AppName:
+    Type: String
+    Default: video-stream-producer
+
   ExecutionRoleArn:
     Type: String
     Default: arn:aws:iam::117819748843:role/lake-freeze-lambda-role
@@ -31,7 +35,7 @@ Resources:
     Type: AWS::Events::Rule
     Properties: 
       # Description: String
-      Name: WeatherETLJobTrigger
+      Name: !Sub "${AppName}"
       RoleArn: !Ref ExecutionRoleArn
       ScheduleExpression: "cron(0 6 * * ? *)"
       State: ENABLED
@@ -47,7 +51,7 @@ Resources:
   EMRServerlessApplication:
     Type: AWS::EMRServerless::Application
     Properties: 
-      Name: video-stream-producer
+      Name: !Sub "${AppName}"
       Architecture: X86_64
       AutoStartConfiguration: 
         Enabled: true
@@ -70,10 +74,10 @@ Resources:
   StepFunctionStateMachine:
     Type: AWS::StepFunctions::StateMachine
     Properties:
-      StateMachineName: EMRWeatherETLJobStateMachine
+      StateMachineName: !Sub "${AppName}"
       RoleArn: !Ref ExecutionRoleArn
       Definition: {
-            "Comment": "Runs EMR Serverless job for video-stream-consumer",
+            "Comment": !Sub "Runs EMR Serverless job for ${AppName}",
             "StartAt": "StartJobRun",
             "States": {
                 "StartJobRun": {
@@ -86,7 +90,7 @@ Resources:
                       "ExecutionRoleArn": !Ref ExecutionRoleArn,
                       "JobDriver": {
                         "SparkSubmit": {
-                            "EntryPoint": !Sub "s3://${DeploymentZone}/video-stream-consumer/spark_entrypoint.py",
+                            "EntryPoint": !Sub "s3://${DeploymentZone}/${AppName}/spark_entrypoint.py",
                             "SparkSubmitParameters": !Sub "
                                 --driver-memory 2G 
                                 --driver-cores 2 
