@@ -47,7 +47,7 @@ Resources:
   EMRServerlessApplication:
     Type: AWS::EMRServerless::Application
     Properties: 
-      Name: WeatherETLApplication
+      Name: video-stream-producer
       Architecture: X86_64
       AutoStartConfiguration: 
         Enabled: true
