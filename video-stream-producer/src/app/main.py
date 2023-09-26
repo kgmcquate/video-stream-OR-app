@@ -244,7 +244,8 @@ def main(spark = SparkSession.builder.getOrCreate()):
                 capture_fps=0.5,
             )
         )
-        .map(lambda stream: stream.start())
+        .map(lambda stream: stream.start_stream())
+        .collect()
     )
 
     # for video_id in video_ids:
@@ -253,6 +254,7 @@ def main(spark = SparkSession.builder.getOrCreate()):
     #         video_id=video_id,
     #         capture_fps=0.5,
     #     )
+    #     stream.start_stream()
 
 
 
