@@ -84,7 +84,7 @@ Resources:
                   "Type": "Task",
                   "End": true,
                   "Parameters": {
-                      "Name": "Weather ETL",
+                      "Name": !Sub "${AppName}",
                       "ClientToken.$": "States.UUID()",
                       "ApplicationId": !Ref EMRServerlessApplication,
                       "ExecutionRoleArn": !Ref ExecutionRoleArn,
