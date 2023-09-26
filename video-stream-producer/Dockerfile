@@ -17,7 +17,10 @@ COPY ./dist/* ./dist/
 #     ./configure --enable-optimizations && \
 #     make altinstall
 
-RUN pip3 install -r requirements.txt && pip3 install ./dist/*
+RUN ${DRIVER_PYTHON} -m pip install -r requirements.txt && \
+    ${DRIVER_PYTHON} -m pip install ./dist/*
 
 # EMRS will run the image as hadoop
 USER hadoop:hadoop
+
+# ENTRYPOINT []
