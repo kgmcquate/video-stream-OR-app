@@ -233,7 +233,7 @@ def main(spark = SparkSession.builder.getOrCreate()):
         .collect()
     )
 
-    print(f"{video_ids=}")
+    print(f"{video_ids}")
 
     (
         spark.sparkContext
