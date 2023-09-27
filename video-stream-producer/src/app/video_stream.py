@@ -178,7 +178,7 @@ class VideoStream:
 
     def start_stream(self):
         try:
-            self.stream.start()
+            self._start_stream()
         except Exception as e:
             raise e
         finally:

@@ -9,24 +9,35 @@ import boto3
 import socket
 
 
-from .video_stream import VideoStream
+
 
 
 class Config:
     arbitrary_types_allowed = True
     
+def test():
+    from video_stream import VideoStream
+    video_ids = [
+        "w_DfTc7F5oQ"
+    ]
+
+    for video_id in video_ids:
+        stream = VideoStream(
+            streaming_service="youtube",
+            video_id=video_id,
+            capture_fps=0.5,
+        )
+        stream.start_stream()
 
 def main():
     from .database import get_jdbc_options
+    from .video_stream import VideoStream
 
     from pyspark.sql import SparkSession
 
     spark = SparkSession.builder.getOrCreate()
 
-    # video_ids = [
-    #     # "DHUnz4dyb54",
-    #     "w_DfTc7F5oQ"
-    # ]
+
 
     video_ids = (
         spark.read
@@ -71,4 +82,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    test()
