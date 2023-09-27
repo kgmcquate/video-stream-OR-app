@@ -6,3 +6,4 @@ fastavro
 confluent-kafka
 numpy
 opencv-python
+yt_dlp
