@@ -178,11 +178,11 @@ class VideoStream:
 
     def start_stream(self):
         try:
-            self.start_stream()
+            self.stream.start()
         except Exception as e:
             raise e
         finally:
-            self.stop_stream()
+            self.stream.stop()
 
 
     def stop_stream(self):

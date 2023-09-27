@@ -8,8 +8,6 @@ import json
 import boto3
 import socket
 
-from pyspark.sql import SparkSession
-from pyspark.sql.types import StructType, StructField, DateType, StringType, FloatType, IntegerType, TimestampType
 
 from .video_stream import VideoStream
 
@@ -20,6 +18,8 @@ class Config:
 
 def main():
     from .database import get_jdbc_options
+
+    from pyspark.sql import SparkSession
 
     spark = SparkSession.builder.getOrCreate()
 
