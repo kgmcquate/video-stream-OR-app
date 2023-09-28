@@ -95,7 +95,7 @@ jobs:
 
 
   deploy_image-classifier_docker_image:
-    name: Deploy video-stream-producer Docker Image
+    name: Deploy image-classifier Docker Image
     runs-on: ubuntu-latest
     environment: production
     container:
@@ -119,24 +119,24 @@ jobs:
           python -m build --sdist ./
       
       
-            - name: build and push
-              uses: vitr/actions-build-and-upload-to-ecs@master
-              with:
-                path: image-classifier/
-                dockerfile: image-classifier/Dockerfile
-                access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                account_id: ${{ env.AWS_ACCOUNT_ID }}
-                repo: emr-serverless
-                region: ${{ env.AWS_REGION }}
-                tags: image-classifier
-                create_repo: false
-               
-      
-            - name: Copy Python files to S3 deployment zone
-              working-directory: ./image-classifier
-              run: |
-                aws s3 cp spark_entrypoint.py s3://deployment-zone-${AWS_ACCOUNT_ID}/image-classifier/
+      - name: build and push
+        uses: vitr/actions-build-and-upload-to-ecs@master
+        with:
+          path: image-classifier/
+          dockerfile: image-classifier/Dockerfile
+          access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          account_id: ${{ env.AWS_ACCOUNT_ID }}
+          repo: emr-serverless
+          region: ${{ env.AWS_REGION }}
+          tags: image-classifier
+          create_repo: false
+          
+
+      - name: Copy Python files to S3 deployment zone
+        working-directory: ./image-classifier
+        run: |
+          aws s3 cp spark_entrypoint.py s3://deployment-zone-${AWS_ACCOUNT_ID}/image-classifier/
       
   deploy_image-classifier_sam:
     name: Deploy image-classifier SAM template
