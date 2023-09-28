@@ -4,7 +4,7 @@ Transform: AWS::Serverless-2016-10-31
 Parameters:
   AppName:
     Type: String
-    Default: video-stream-producer
+    Default: image-classifier
 
   ExecutionRoleArn:
     Type: String
@@ -20,7 +20,7 @@ Parameters:
 
   DockerImageUri:
     Type: String
-    Default: 117819748843.dkr.ecr.us-east-1.amazonaws.com/emr-serverless:video-stream-producer
+    Default: 117819748843.dkr.ecr.us-east-1.amazonaws.com/emr-serverless:image-classifier
 
   SecurityGroupIds:
     Type: CommaDelimitedList
