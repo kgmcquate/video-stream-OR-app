@@ -6,6 +6,7 @@ import numpy as np
 face_classifier = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 
 
+
 @dataclasses.dataclass(slots=True)
 class ProcessedImage:
     image: np.array
@@ -13,6 +14,11 @@ class ProcessedImage:
     object_bounding_boxes: list[tuple]
     detector_name: str
     metadata: dict[str, Any]
+
+    def to_jpeg(self) -> bytes:
+        success, encoded_image = cv2.imencode('.jpeg', self.image)
+        jpeg_bytes = encoded_image.tobytes()
+        return jpeg_bytes
 
 
 class BaseObjectDetector:
@@ -26,7 +32,7 @@ class BaseObjectDetector:
 
 @dataclasses.dataclass
 class HAARClassifier(BaseObjectDetector):
-    bounding_box_color: tuple[int, int, int]
+    bounding_box_color: tuple[int, int, int] = (255, 0, 0)
     detector_name: str = "haar_classifier"
     target_object_name: str = "person"
     haar_cascade_file: str = cv2.data.haarcascades + "haarcascade_fullbody.xml"
@@ -55,3 +61,28 @@ class HAARClassifier(BaseObjectDetector):
                         detector_name=self.detector_name,
                         metadata={}
                     )
+    
+
+
+@dataclasses.dataclass
+class RawImageRecord:
+    video_stream_id: str
+    jpeg_image: bytes
+    metadata_json: str
+    object_detectors: list[BaseObjectDetector] = [HAARClassifier()]
+
+    def process_image(self) -> list[ProcessedImage]:
+        
+        
+        image = cv2.imdecode(
+            np.frombuffer(self.jpeg_image, np.uint8),
+            cv2.IMREAD_COLOR
+        )
+
+        processed_images = []
+        for detector in self.object_detectors:
+            processed_images.append(
+                detector.process(image)
+            )
+
+        return processed_images
