@@ -2,9 +2,10 @@ import cv2
 import dataclasses
 from typing import Any
 import numpy as np
+import base64
+import json
 
 face_classifier = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
-
 
 
 @dataclasses.dataclass(slots=True)
@@ -15,11 +16,26 @@ class ProcessedImage:
     detector_name: str
     metadata: dict[str, Any]
 
-    def to_jpeg(self) -> bytes:
+    def to_jpeg_base64(self) -> str:
         success, encoded_image = cv2.imencode('.jpeg', self.image)
         jpeg_bytes = encoded_image.tobytes()
-        return jpeg_bytes
+        return base64.b64encode(jpeg_bytes).decode('ascii')
 
+    def to_record(self):
+        from pyspark.sql import Row
+        return {
+            "detector_name": self.detector_name,
+            "object_name": self.object_name,
+            # "num_objects": 
+            "object_bounding_boxes": self.object_bounding_boxes,
+            # "metadata": self.metadata,
+            "image_jpeg_base64": self.to_jpeg_base64()
+        }
+    
+    def to_json(self):
+        return json.dumps(self.to_record())
+
+        
 
 class BaseObjectDetector:
     bounding_box_color: tuple[int]

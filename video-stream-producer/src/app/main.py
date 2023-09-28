@@ -35,8 +35,6 @@ def main():
 
     spark = SparkSession.builder.getOrCreate()
 
-
-
     video_ids = (
         spark.read
         .option("dbtable", "video_streams")

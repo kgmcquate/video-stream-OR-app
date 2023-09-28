@@ -20,3 +20,4 @@ kafka_config = {
 }
 
 raw_video_frames_topic_name = "raw-livestream-frames"
+processed_video_frames_topic_name = "processed-livestream-frames"
