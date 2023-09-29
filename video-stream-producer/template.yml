@@ -93,10 +93,10 @@ Resources:
                             "EntryPoint": !Sub "s3://${DeploymentZone}/${AppName}/spark_entrypoint.py",
                             "SparkSubmitParameters": !Sub "
                                 --driver-memory 2G 
-                                --driver-cores 2 
-                                --num-executors 1 
+                                --driver-cores 1 
+                                --num-executors 4
                                 --executor-memory 2G
-                                --executor-cores 2
+                                --executor-cores 1
                                 --conf spark.dynamicAllocation.enabled=false
                                 --jars https://repo1.maven.org/maven2/org/postgresql/postgresql/42.6.0/postgresql-42.6.0.jar
                               "

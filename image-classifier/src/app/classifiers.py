@@ -78,14 +78,14 @@ class HAARClassifier(BaseObjectDetector):
                         metadata={}
                     )
     
-
+DETECTORS = [HAARClassifier()]
 
 @dataclasses.dataclass
 class RawImageRecord:
     video_stream_id: str
     jpeg_image: bytes
     metadata_json: str
-    object_detectors: list[BaseObjectDetector] = [HAARClassifier()]
+    object_detectors: list[BaseObjectDetector] = dataclasses.field(default_factory=lambda: DETECTORS) 
 
     def process_image(self) -> list[ProcessedImage]:
         
