@@ -100,6 +100,8 @@ def main():
             **{f"kafka.{k}": v for k, v in kafka_config.items()}
         )
         .option("topic", processed_video_frames_topic_name)
+        # .option("checkpointLocation", "/path/to/checkpoint/dir/in/hdfs/")
+        # .trigger()
         .save()
 
     )
