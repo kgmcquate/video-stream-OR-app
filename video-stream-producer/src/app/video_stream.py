@@ -96,29 +96,29 @@ class VideoStream:
     def write_frame_to_kafka(self, frame: np.array, timestamp: datetime.datetime):
 
         avro_schema = """
+{
+    "type": "record",
+    "namespace": "com.mycorp.mynamespace",
+    "name": "sampleRecord",
+    "doc": "Sample schema to help you get started.",
+    "fields": [
         {
-            "type": "record",
-            "namespace": "com.mycorp.mynamespace",
-            "name": "sampleRecord",
-            "doc": "Sample schema to help you get started.",
-            "fields": [
-                {
-                    "name": "video_stream_id",
-                    "type": "string",
-                    "doc": "id for video stream taken from source"
-                },
-                {
-                    "name": "jpeg_image",
-                    "type": "bytes",
-                    "doc": "jpeg image"
-                },
-                {
-                    "name": "metadata_json",
-                    "type": "string",
-                    "doc": "Any additional information in json format"
-                }
-            ]
+            "name": "video_stream_id",
+            "type": "string",
+            "doc": "id for video stream taken from source"
+        },
+        {
+            "name": "jpeg_image",
+            "type": "bytes",
+            "doc": "jpeg image"
+        },
+        {
+            "name": "metadata_json",
+            "type": "string",
+            "doc": "Any additional information in json format"
         }
+    ]
+}
         """
 
 

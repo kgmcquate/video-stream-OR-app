@@ -14,22 +14,27 @@ class ProcessedImage:
     object_name: str
     object_bounding_boxes: list[tuple]
     detector_name: str
-    metadata: dict[str, Any]
+    id: str = None
+    metadata: dict[str, Any] = None
+    video_stream_id: str = None
 
     def to_jpeg_base64(self) -> str:
-        success, encoded_image = cv2.imencode('.jpeg', self.image)
-        jpeg_bytes = encoded_image.tobytes()
+        jpeg_bytes = self.to_jpeg_bytes()
         return base64.b64encode(jpeg_bytes).decode('ascii')
 
+    def to_jpeg_bytes(self):
+        success, encoded_image = cv2.imencode('.jpeg', self.image)
+        jpeg_bytes = encoded_image.tobytes()
+        return jpeg_bytes
+
     def to_record(self):
-        from pyspark.sql import Row
         return {
+            "video_stream_id": self.video_stream_id,
             "detector_name": self.detector_name,
             "object_name": self.object_name,
-            # "num_objects": 
-            "object_bounding_boxes": self.object_bounding_boxes,
-            # "metadata": self.metadata,
-            "image_jpeg_base64": self.to_jpeg_base64()
+            "object_bounding_boxes_json": json.dumps(self.object_bounding_boxes),
+            "metadata_json": json.dumps(self.metadata),
+            "jpeg_image": self.to_jpeg_bytes()
         }
     
     def to_json(self):
@@ -73,15 +78,15 @@ class HAARClassifier(BaseObjectDetector):
         return ProcessedImage(
                         image=image,
                         object_name=self.target_object_name,
-                        object_bounding_boxes=[(x, y, w, h) for (x, y, w, h) in objs], 
-                        detector_name=self.detector_name,
-                        metadata={}
+                        object_bounding_boxes=[(int(x), int(y), int(w), int(h)) for (x, y, w, h) in objs], 
+                        detector_name=self.detector_name
                     )
     
 DETECTORS = [HAARClassifier()]
 
 @dataclasses.dataclass
 class RawImageRecord:
+    id: str
     video_stream_id: str
     jpeg_image: bytes
     metadata_json: str
@@ -97,8 +102,12 @@ class RawImageRecord:
 
         processed_images = []
         for detector in self.object_detectors:
+            processed_image = detector.process(image)
+            processed_image.video_stream_id = self.video_stream_id
+            processed_image.metadata = {}
+            processed_image.id = f"{self.id}_{detector.detector_name}_{detector.target_object_name}"
             processed_images.append(
-                detector.process(image)
+                processed_image
             )
 
         return processed_images
