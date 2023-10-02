@@ -3,14 +3,14 @@ import json
 
 from .kafka import kafka_config, raw_video_frames_topic_name, processed_video_frames_topic_name
 
-from image_stream_processor import ImageStreamProcessor
+from .image_stream_processor import ImageStreamProcessor
 
 from confluent_kafka import Consumer
 
 from fastavro.types import AvroMessage
 from fastavro import parse_schema
 
-from kafka import kafka_config, raw_video_frames_topic_name, processed_video_frames_topic_name
+from .kafka import kafka_config, raw_video_frames_topic_name, processed_video_frames_topic_name
 
 from avro_schemas import raw_image_avro_schema, processed_image_avro_schema
 
