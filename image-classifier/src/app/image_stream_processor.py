@@ -8,7 +8,7 @@ from .classifiers import ProcessedImage, RawImageRecord
 
 from dataclasses import dataclass
 
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 
 def log_kafka_message_delivery(err, msg):
@@ -72,7 +72,7 @@ class ImageStreamProcessor:
             self.producer.flush()
 
     
-    def process_message(self, msg) -> list[ProcessedImage]:
+    def process_message(self, msg) -> List[ProcessedImage]:
     
         records = self.deserialize_avro(
             msg.value()
@@ -88,7 +88,7 @@ class ImageStreamProcessor:
         # display(Image.fromarray(processed_images[0].image))
         # print(len(processed_images[0].object_bounding_boxes))
 
-    def write_processed_images(self, processed_images: list[ProcessedImage]):
+    def write_processed_images(self, processed_images: List[ProcessedImage]):
         for img in processed_images:
             avro_bytes = self.serialize_avro([img.to_record()])
 
@@ -115,7 +115,7 @@ class ImageStreamProcessor:
         return bytes_writer.getvalue()
         
 
-    def deserialize_avro(self, avro_bytes: bytes) -> list[AvroMessage]:
+    def deserialize_avro(self, avro_bytes: bytes) -> List[AvroMessage]:
         with io.BytesIO(avro_bytes) as bytes_io:
             reader = fastavro.reader(bytes_io, self.src_avro_schema)
             return [msg for msg in reader]
