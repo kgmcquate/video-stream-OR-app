@@ -1,21 +1,22 @@
 import cv2
 import dataclasses
-from typing import Any
+from typing import Dict, List, Tuple, Any
 import numpy as np
 import base64
 import json
 
+
 face_classifier = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 
 
-@dataclasses.dataclass(slots=True)
+@dataclasses.dataclass #(slots=True)
 class ProcessedImage:
     image: np.array
     object_name: str
-    object_bounding_boxes: list[tuple]
+    object_bounding_boxes: List[tuple]
     detector_name: str
     id: str = None
-    metadata: dict[str, Any] = None
+    metadata: Dict[str, Any] = None
     video_stream_id: str = None
 
     def to_jpeg_base64(self) -> str:
@@ -43,7 +44,7 @@ class ProcessedImage:
         
 
 class BaseObjectDetector:
-    bounding_box_color: tuple[int]
+    bounding_box_color: Tuple[int]
     detector_name: str = None
     target_object_name: str = None
 
@@ -53,7 +54,7 @@ class BaseObjectDetector:
 
 @dataclasses.dataclass
 class HAARClassifier(BaseObjectDetector):
-    bounding_box_color: tuple[int, int, int] = (255, 0, 0)
+    bounding_box_color: Tuple[int, int, int] = (255, 0, 0)
     detector_name: str = "haar_classifier"
     target_object_name: str = "person"
     haar_cascade_file: str = cv2.data.haarcascades + "haarcascade_fullbody.xml"
@@ -90,9 +91,9 @@ class RawImageRecord:
     video_stream_id: str
     jpeg_image: bytes
     metadata_json: str
-    object_detectors: list[BaseObjectDetector] = dataclasses.field(default_factory=lambda: DETECTORS) 
+    object_detectors: List[BaseObjectDetector] = dataclasses.field(default_factory=lambda: DETECTORS) 
 
-    def process_image(self) -> list[ProcessedImage]:
+    def process_image(self) -> List[ProcessedImage]:
         
         
         image = cv2.imdecode(
