@@ -12,8 +12,7 @@ from fastavro import parse_schema
 
 from .kafka import kafka_config, raw_video_frames_topic_name, processed_video_frames_topic_name
 
-from avro_schemas import raw_image_avro_schema, processed_image_avro_schema
-
+from .avro_schemas import raw_image_avro_schema, processed_image_avro_schema
 
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_EXCEPTION
 
