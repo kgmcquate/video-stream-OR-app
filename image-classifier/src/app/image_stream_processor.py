@@ -4,7 +4,7 @@ from fastavro.types import AvroMessage
 import fastavro
 import io
 
-from classifiers import ProcessedImage, RawImageRecord
+from .classifiers import ProcessedImage, RawImageRecord
 
 from dataclasses import dataclass
 
