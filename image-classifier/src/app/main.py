@@ -29,7 +29,8 @@ def main():
     spark = SparkSession.builder.getOrCreate()
 
     (
-        spark.parallelize(src_partitions, len(src_partitions))
+        spark.sparkContext
+        .parallelize(src_partitions, len(src_partitions))
         .map(lambda src_partition: ImageStreamProcessor(
                 src_topic=raw_video_frames_topic_name,
                 src_partition=src_partition,
