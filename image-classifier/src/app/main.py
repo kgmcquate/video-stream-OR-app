@@ -51,7 +51,7 @@ def test():
     processors = [
         ImageStreamProcessor(
             src_topic=raw_video_frames_topic_name,
-            src_partition=0,
+            src_partition=partition,
             src_avro_schema=parse_schema(json.loads(raw_image_avro_schema)),
             tgt_topic=processed_video_frames_topic_name,
             tgt_avro_schema=parse_schema(json.loads(processed_image_avro_schema)),

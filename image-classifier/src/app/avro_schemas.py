@@ -10,6 +10,11 @@ raw_image_avro_schema = """
                     "doc": "id for video stream taken from source"
                 },
                 {
+                    "name": "frame_ts",
+                    "type": "string",
+                    "doc": "timestamp of when the frame was initially ingested"
+                },
+                {
                     "name": "jpeg_image",
                     "type": "bytes",
                     "doc": "jpeg image"
@@ -41,6 +46,11 @@ processed_image_avro_schema = """
       "name": "video_stream_id",
       "type": "string",
       "doc": "id for video stream taken from source"
+    },
+    {
+      "name": "frame_ts",
+      "type": "string",
+      "doc": "timestamp of when the frame was initially ingested"
     },
     {
       "name": "detector_name",

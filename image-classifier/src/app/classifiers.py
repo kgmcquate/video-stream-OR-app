@@ -18,6 +18,7 @@ class ProcessedImage:
     id: str = None
     metadata: Dict[str, Any] = None
     video_stream_id: str = None
+    frame_ts: str = None
 
     def to_jpeg_base64(self) -> str:
         jpeg_bytes = self.to_jpeg_bytes()
@@ -31,6 +32,7 @@ class ProcessedImage:
     def to_record(self):
         return {
             "video_stream_id": self.video_stream_id,
+            "frame_ts": self.frame_ts,
             "detector_name": self.detector_name,
             "object_name": self.object_name,
             "object_bounding_boxes_json": json.dumps(self.object_bounding_boxes),
@@ -89,6 +91,7 @@ DETECTORS = [HAARClassifier()]
 class RawImageRecord:
     id: str
     video_stream_id: str
+    frame_ts: str
     jpeg_image: bytes
     metadata_json: str
     object_detectors: List[BaseObjectDetector] = dataclasses.field(default_factory=lambda: DETECTORS) 
@@ -105,6 +108,7 @@ class RawImageRecord:
         for detector in self.object_detectors:
             processed_image = detector.process(image)
             processed_image.video_stream_id = self.video_stream_id
+            processed_image.frame_ts = self.frame_ts
             processed_image.metadata = {}
             processed_image.id = f"{self.id}_{detector.detector_name}_{detector.target_object_name}"
             processed_images.append(

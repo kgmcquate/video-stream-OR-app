@@ -108,6 +108,11 @@ class VideoStream:
             "doc": "id for video stream taken from source"
         },
         {
+            "name": "frame_ts",
+            "type": "string",
+            "doc": "timestamp of when the frame was initially ingested"
+        },
+        {
             "name": "jpeg_image",
             "type": "bytes",
             "doc": "jpeg image"
@@ -138,6 +143,7 @@ class VideoStream:
                         records=[{
                             # "key": f"{self.video_id}_{timestamp.isoformat()}",
                             "video_stream_id": self.video_id,
+                            "frame_ts": timestamp.isoformat(),
                             "jpeg_image": jpeg_bytes,
                             "metadata_json": json.dumps({})
                         }]
