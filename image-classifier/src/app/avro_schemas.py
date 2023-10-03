@@ -11,9 +11,9 @@ raw_image_avro_schema = """
                 },
                 {
                     "name": "frame_ts",
-                    "type": ["string", "null"],
+                    "type": "string",
                     "doc": "timestamp of when the frame was initially ingested",
-                    "default": null
+                    "default": ""
                 },
                 {
                     "name": "jpeg_image",
