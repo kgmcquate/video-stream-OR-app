@@ -38,7 +38,7 @@ Resources:
       Name: !Sub "${AppName}"
       RoleArn: !Ref ExecutionRoleArn
       ScheduleExpression: "cron(0 6 * * ? *)"
-      State: ENABLED
+      State: DISABLED
       Targets:
         - Id: ETLStepFunction
           Arn: !GetAtt StepFunctionStateMachine.Arn
