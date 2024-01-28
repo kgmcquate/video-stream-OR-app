@@ -12,12 +12,16 @@ import json
 import boto3
 import socket
 import os
+from concurrent.futures import Future
 
-from confluent_kafka import Producer
+# from confluent_kafka import Producer
 
 from urllib.parse import urlunsplit, urlencode
 
-from .kafka import kafka_producer_config, raw_video_frames_topic_name
+# from .kafka import kafka_producer_config, raw_video_frames_topic_name
+from pulsar_config import token, user, broker_host, pulsar_port, raw_video_frames_topic_name
+
+import pulsar
 
 STREAM_RESOLUTION = "360p"
 
@@ -42,9 +46,12 @@ class VideoStream:
     def __post_init__(self):
         base_url = "http://youtube.com"
 
+        # client.close()
+
         params = {'v': self.video_id,}
         self.url = f'{base_url}/watch?{urlencode(params)}'
-        self._init_stream()
+        # self._init_stream()
+        self.stream: CamGear = None
 
     def _init_stream(self):
         self.stream = CamGear(
@@ -54,11 +61,20 @@ class VideoStream:
                 # logging=True
                 **{"STREAM_RESOLUTION": STREAM_RESOLUTION}
             )
+        
+        
+        self.pulsar_client = pulsar.Client(
+            f'pulsar://{broker_host}:{pulsar_port}',
+            authentication = pulsar.AuthenticationToken(token)
+        )
 
+        self.producer = self.pulsar_client.create_producer(raw_video_frames_topic_name)
 
     def _start_stream(self):
+        if self.stream is None:
+            self._init_stream(self)
 
-        print(self.stream.framerate)
+        # print(self.stream.framerate)
         # self.stream.ytv_metadata
         frame_period_ms = int(1e3 / self.stream.framerate)
 
@@ -149,20 +165,24 @@ class VideoStream:
                         }]
         )
 
-        
-        
-        producer = Producer(kafka_producer_config)
-        
-        producer.produce(
-            topic=raw_video_frames_topic_name,
-            value=bytes_writer.getvalue(),
-            key=f"{self.video_id}_{timestamp.isoformat()}",
-            on_delivery=log_kafka_message_delivery
-        )
+        print("writing ")
+        self.producer.send(bytes_writer.getvalue())
+        self.producer.flush()
 
-        producer.flush()
+        
+        
+        # producer = Producer(kafka_producer_config)
+        
+        # producer.produce(
+        #     topic=raw_video_frames_topic_name,
+        #     value=bytes_writer.getvalue(),
+        #     key=f"{self.video_id}_{timestamp.isoformat()}",
+        #     on_delivery=log_kafka_message_delivery
+        # )
 
-        producer.poll(0)
+        # producer.flush()
+
+        # producer.poll(0)
 
 
     def start_stream(self):
@@ -171,10 +191,11 @@ class VideoStream:
         except Exception as e:
             raise e
         finally:
-            self.stream.stop()
+            self.stop_stream()
 
 
     def stop_stream(self):
+        # self.pulsar_client.close()
         self.stream.stop()
 
     def __enter__(self):
@@ -182,3 +203,9 @@ class VideoStream:
     
     def __exit__(self):
         self.stop_stream()
+
+
+@dataclasses.dataclass
+class RunningStream:
+    video_stream: VideoStream
+    future: Future

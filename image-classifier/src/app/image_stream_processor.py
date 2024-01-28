@@ -1,4 +1,4 @@
-from confluent_kafka import Consumer, Producer, TopicPartition, KafkaException, KafkaError
+# from confluent_kafka import Consumer, Producer, TopicPartition, KafkaException, KafkaError
 
 from fastavro.types import AvroMessage
 import fastavro
@@ -10,6 +10,9 @@ from dataclasses import dataclass
 
 from typing import Any, Dict, List
 
+
+from pulsar_config import token, user, broker_host, pulsar_port, raw_video_frames_topic_name, processed_video_frames_topic_name
+import pulsar
 
 def log_kafka_message_delivery(err, msg):
     """ Called once for each message produced to indicate delivery result.
@@ -28,21 +31,30 @@ class ImageStreamProcessor:
     tgt_topic: str
     # tgt_partition: int
     tgt_avro_schema: fastavro.types.Schema
-    kafka_config: Dict[str, str]
+    # kafka_config: Dict[str, str]
     poll_period_seconds: float = 1.0
 
     def __post_init__(self):
-        self.consumer = Consumer(self.kafka_config)
-        # self.consumer.subscribe(self.topic)
+        # self.consumer = Consumer(self.kafka_config)
+        # # self.consumer.subscribe(self.topic)
         
-        self.consumer.assign([
-            TopicPartition(
-                self.src_topic,
-                self.src_partition
-            )
-        ])
+        # self.consumer.assign([
+        #     TopicPartition(
+        #         self.src_topic,
+        #         self.src_partition
+        #     )
+        # ])
 
-        self.producer = Producer(self.kafka_config)
+        # self.producer = Producer(self.kafka_config)
+
+        self.pulsar_client = pulsar.Client(
+            f'pulsar://{broker_host}:{pulsar_port}',
+            authentication = pulsar.AuthenticationToken(token)
+        )
+
+        self.consumer = self.pulsar_client.create_reader(raw_video_frames_topic_name, )
+
+        self.producer = self.pulsar_client.create_producer(processed_video_frames_topic_name)
 
 
     def _consume(self):

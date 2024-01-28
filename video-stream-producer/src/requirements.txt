@@ -3,7 +3,10 @@ urllib3
 boto3
 vidgear
 fastavro
-confluent-kafka
+# confluent-kafka
 numpy
 opencv-python
 yt_dlp
+pulsar-client[avro]
+sqlalchemy
+psycopg2-binary

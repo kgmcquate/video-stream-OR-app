@@ -1,22 +1,23 @@
 
 import json
 
-from .kafka import kafka_config, raw_video_frames_topic_name, processed_video_frames_topic_name
+# from .kafka import kafka_config, raw_video_frames_topic_name, processed_video_frames_topic_name
+
+# from pulsar_config import token, user, broker_host, pulsar_port, raw_video_frames_topic_name
+
 
 from .image_stream_processor import ImageStreamProcessor
 
-from confluent_kafka import Consumer
+# from confluent_kafka import Consumer
 
 from fastavro.types import AvroMessage
 from fastavro import parse_schema
-
-from .kafka import kafka_config, raw_video_frames_topic_name, processed_video_frames_topic_name
 
 from .avro_schemas import raw_image_avro_schema, processed_image_avro_schema
 
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_EXCEPTION
 
-from pyspark.sql import SparkSession
+# from pyspark.sql import SparkSession
 from fastavro import writer, reader, parse_schema
 
 
@@ -57,8 +58,8 @@ def test():
             tgt_avro_schema=parse_schema(json.loads(processed_image_avro_schema)),
             kafka_config=kafka_config
         )
-        for partition 
-        in src_partitions
+        # for partition 
+        # in src_partitions
     ]
 
     with ThreadPoolExecutor(max_workers=len(src_partitions)) as executor:
