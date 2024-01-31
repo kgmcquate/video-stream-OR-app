@@ -99,6 +99,7 @@ Resources:
                                 --executor-cores 2
                                 --conf spark.dynamicAllocation.enabled=false
                                 --jars https://repo1.maven.org/maven2/org/postgresql/postgresql/42.6.0/postgresql-42.6.0.jar
+                                --packages io.streamnative.connectors:pulsar-spark-connector_2.12:3.4.1.0
                               "
                         }
                       },

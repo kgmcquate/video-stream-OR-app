@@ -19,7 +19,7 @@ from concurrent.futures import Future
 from urllib.parse import urlunsplit, urlencode
 
 # from .kafka import kafka_producer_config, raw_video_frames_topic_name
-from pulsar_config import token, user, broker_host, pulsar_port, raw_video_frames_topic_name
+from pulsar_config import broker_url, token, user, broker_host, pulsar_port, raw_video_frames_topic_name
 
 import pulsar
 
@@ -64,7 +64,7 @@ class VideoStream:
         
         
         self.pulsar_client = pulsar.Client(
-            f'pulsar://{broker_host}:{pulsar_port}',
+            broker_url,
             authentication = pulsar.AuthenticationToken(token)
         )
 

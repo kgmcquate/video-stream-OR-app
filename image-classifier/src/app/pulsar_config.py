@@ -14,6 +14,8 @@ user = secret["user"]
 broker_host = secret["broker_host"]
 pulsar_port = secret["pulsar_port"]
 
+broker_url = f'pulsar://{broker_host}:{pulsar_port}'
+
 raw_video_frames_topic_name = "raw-livestream-frames"
 processed_video_frames_topic_name = "processed-livestream-frames"
 
