@@ -1,4 +1,6 @@
-raw_image_avro_schema = """
+import json, fastavro
+
+raw_image_avro_schema = fastavro.parse_schema(json.loads("""
         {
             "type": "record",
             "name": "sampleRecord",
@@ -27,7 +29,7 @@ raw_image_avro_schema = """
                 }
             ]
         }
-        """
+        """))
 
 
       # "items": {
@@ -37,7 +39,7 @@ raw_image_avro_schema = """
       #   }
       # }
 
-processed_image_avro_schema = """
+processed_image_avro_schema = fastavro.parse_schema(json.loads("""
 {
   "type": "record",
   "name": "sampleRecord",
@@ -79,4 +81,4 @@ processed_image_avro_schema = """
       "doc": "Any additional information in json format"
     }
   ]
-}"""
+  }"""))

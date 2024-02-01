@@ -1,28 +1,48 @@
-
 import json
-
-# from .kafka import kafka_config, raw_video_frames_topic_name, processed_video_frames_topic_name
-
-from pulsar_config import token, broker_url, user, broker_host, pulsar_port, raw_video_frames_topic_name, processed_video_frames_topic_name
-
-
-# from .image_stream_processor import ImageStreamProcessor
-
-# from confluent_kafka import Consumer
-
-from fastavro.types import AvroMessage
-from fastavro import parse_schema
-
-from .avro_schemas import raw_image_avro_schema, processed_image_avro_schema
-
+import io
+import fastavro
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_EXCEPTION
-
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import udf, col, posexplode, explode
+from pyspark.sql.types import IntegerType, BinaryType, ArrayType
 from fastavro import writer, reader, parse_schema
 
-def main():
-    spark = SparkSession.builder.getOrCreate()
+from pulsar_config import token, broker_url, user, broker_host, pulsar_port, raw_video_frames_topic_name, processed_video_frames_topic_name
+from classifiers import RawImageRecord, ProcessedImage
+from avro_schemas import raw_image_avro_schema, processed_image_avro_schema
 
+data_bucket = "data-zone-117819748843-us-east-1"
+
+@udf(returnType=ArrayType(BinaryType()))
+def run_processing(key, avro_bytes):
+    with io.BytesIO(avro_bytes) as bytes_io:
+        reader = fastavro.reader(bytes_io, raw_image_avro_schema)
+        messages = [msg for msg in reader]
+    assert len(messages) == 1
+    message = messages[0]
+
+    raw_image = RawImageRecord(
+        id=key,
+        **message
+    )
+
+    processed_images = raw_image.process_image()
+
+    avro_images = []
+    for img in processed_images:
+        bytes_writer = io.BytesIO()
+        img_dict = img.to_record()
+        fastavro.writer(bytes_writer, 
+                        schema=processed_image_avro_schema, 
+                        records=[img_dict]
+        )
+        avro_images.append(
+            bytes_writer.getvalue()
+        )
+
+    return avro_images
+
+def main(spark = SparkSession.builder.getOrCreate()):
     df = (
         spark
         .readStream
@@ -30,68 +50,27 @@ def main():
         .option("service.url", broker_url)
         .option("pulsar.client.authPluginClassName","org.apache.pulsar.client.impl.auth.AuthenticationToken")
         .option("pulsar.client.authParams", f"token:{token}")
-        .option("topic", processed_video_frames_topic_name)
+        .option("topic", raw_video_frames_topic_name)
         .load()
-        .selectExpr("CAST(__key AS STRING)", "value")
     )
 
-    df.rdd.map(lambda x: print(x))
-
-
-# def main():
-#     kafka_config['group.id'] = 'emr-serverless'
-
-#     src_partitions = Consumer(kafka_config).list_topics().topics[raw_video_frames_topic_name].partitions.keys()
-
-
-#     spark = SparkSession.builder.getOrCreate()
-
-#     (
-#         spark.sparkContext
-#         .parallelize(src_partitions, len(src_partitions))
-#         .map(lambda src_partition: ImageStreamProcessor(
-#                 src_topic=raw_video_frames_topic_name,
-#                 src_partition=src_partition,
-#                 src_avro_schema=parse_schema(json.loads(raw_image_avro_schema)),
-#                 tgt_topic=processed_video_frames_topic_name,
-#                 tgt_avro_schema=parse_schema(json.loads(processed_image_avro_schema)),
-#                 kafka_config=kafka_config
-#             )
-#         )
-#         .map(lambda processor: processor.consume())
-#         .collect()
-#     )
-
-
-def test():
-    src_partitions = Consumer(kafka_config).list_topics().topics[raw_video_frames_topic_name].partitions.keys()
-
-    processors = [
-        ImageStreamProcessor(
-            src_topic=raw_video_frames_topic_name,
-            src_partition=partition,
-            src_avro_schema=parse_schema(json.loads(raw_image_avro_schema)),
-            tgt_topic=processed_video_frames_topic_name,
-            tgt_avro_schema=parse_schema(json.loads(processed_image_avro_schema)),
-            kafka_config=kafka_config
-        )
-        # for partition 
-        # in src_partitions
-    ]
-
-    with ThreadPoolExecutor(max_workers=len(src_partitions)) as executor:
-        futures = [
-            executor.submit(lambda processor: processor.consume(), processor)
-            for processor in processors
-        ]
-
-        completed_futures, uncompleted_futures = wait(
-            futures,
-            return_when=FIRST_EXCEPTION
-        )
-
-        for future in uncompleted_futures:
-            future.result()
+    (
+        df
+        .where("__key IS NOT NULL")
+        .withColumn("processed_avro_records", run_processing(col("__key"), col("value")) )
+        # .select("__key", "__eventTime", posexplode(col("processed_avro_records")) )
+        # .selectExpr("concat(__key, '__', pos) AS __key", "col AS value", "__eventTime")
+        .select("__key", "__eventTime", explode(col("processed_avro_records")).alias("value") )
+        # .selectExpr("concat(__key, '__', pos) AS __key", "col AS value", "__eventTime")
+        .writeStream
+        .format("pulsar")
+        .option("service.url", broker_url)
+        .option("pulsar.client.authPluginClassName","org.apache.pulsar.client.impl.auth.AuthenticationToken")
+        .option("pulsar.client.authParams", f"token:{token}")
+        .option("topic", processed_video_frames_topic_name)
+        .option("checkpointLocation", f"s3://{data_bucket}/video_streams/processed_images/_checkpoints/")
+        .start()
+    )
         
 if __name__ == "__main__":
     main()
