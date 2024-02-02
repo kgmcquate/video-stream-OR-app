@@ -1,4 +1,6 @@
 import dataclasses
+from enum import Enum
+
 import fastavro
 from fastavro import writer, reader, parse_schema
 
@@ -12,6 +14,7 @@ import json
 import boto3
 import socket
 import os
+import logging
 from concurrent.futures import Future
 
 # from confluent_kafka import Producer
@@ -23,16 +26,27 @@ from pulsar_config import broker_url, token, user, broker_host, pulsar_port, raw
 
 import pulsar
 
+logger = logging.getLogger()
+
 STREAM_RESOLUTION = "360p"
 
 
-def log_kafka_message_delivery(err, msg):
-    """ Called once for each message produced to indicate delivery result.
-    Triggered by poll() or flush(). """
-    if err is not None:
-        print(f'Message delivery failed: {err}')
-    else:
-        print(f'Message delivered to {msg.topic()}. Partition: [{msg.partition()}]')
+# def log_kafka_message_delivery(err, msg):
+#     """ Called once for each message produced to indicate delivery result.
+#     Triggered by poll() or flush(). """
+#     if err is not None:
+#         print(f'Message delivery failed: {err}')
+#     else:
+#         print(f'Message delivered to {msg.topic()}. Partition: [{msg.partition()}]')
+
+
+class StreamStatus(Enum):
+    PENDING = "PENDING"
+    RUNNING = "RUNNING"
+    FAILED = "FAILED"
+    # STOPPED = "STOPPED"
+    REMOVED = "REMOVED"
+
 
 
 @dataclasses.dataclass #(config=Config)
@@ -42,6 +56,7 @@ class VideoStream:
     capture_fps: float
     url: str = None
     stream: CamGear = None
+
 
     def __post_init__(self):
         base_url = "http://youtube.com"
@@ -72,7 +87,7 @@ class VideoStream:
 
     def _start_stream(self):
         if self.stream is None:
-            self._init_stream(self)
+            self._init_stream()
 
         # print(self.stream.framerate)
         # self.stream.ytv_metadata
@@ -81,7 +96,9 @@ class VideoStream:
         capture_period_ms = int(1e3 / self.capture_fps)
 
         self.stream.start()
-        next_capture_time = datetime.datetime.now()
+        self.status = StreamStatus.RUNNING
+
+        next_capture_time = datetime.datetime.now(datetime.timezone.utc)
 
 
         while True:
@@ -89,7 +106,7 @@ class VideoStream:
             if frame is None:
                 break
 
-            now = datetime.datetime.now()
+            now = datetime.datetime.now(datetime.timezone.utc)
 
             if now > next_capture_time:
                 # read frame
@@ -165,8 +182,25 @@ class VideoStream:
                         }]
         )
 
-        print("writing ")
-        self.producer.send(bytes_writer.getvalue())
+        logger.warn("writing ")
+        # raise Exception("here")
+        self.producer.send(
+            bytes_writer.getvalue(),
+            event_timestamp=int(timestamp.timestamp() * 1e3),
+            # sequence_id=
+            partition_key=f"{self.video_id}-{timestamp.isoformat()}",
+            # ordering_key=str(int(timestamp.timestamp() * 1e3))
+        )
+
+            #         properties=None,
+            #  partition_key=None,
+            #  ordering_key=None,
+            #  sequence_id=None,
+            #  replication_clusters=None,
+            #  disable_replication=False,
+            #  event_timestamp=None,
+            #  deliver_at=None,
+            #  deliver_after=None,
         self.producer.flush()
 
         
@@ -205,7 +239,37 @@ class VideoStream:
         self.stop_stream()
 
 
+
 @dataclasses.dataclass
-class RunningStream:
+class StreamManager:
     video_stream: VideoStream
-    future: Future
+    future: Future = None
+    start_time: datetime.datetime = dataclasses.field(default_factory=lambda: datetime.datetime.now(datetime.timezone.utc))
+    status: StreamStatus = StreamStatus.PENDING
+    last_failure_time: datetime.datetime = None
+    failures: dict[datetime.datetime, Exception] = dataclasses.field(default_factory=lambda: {})
+    
+
+    def check_failure(self):
+        if self.future is not None and not self.future.running():
+            if self.future.exception():
+                logger.exception(f"Stream failed with exception: {self.future.exception()}")
+                self.status = StreamStatus.FAILED
+                now = datetime.datetime.now(datetime.timezone.utc)
+                self.last_failure_time = now
+                self.failures[now] = self.future.exception()
+                self.future = None
+                # return True
+            else:
+                raise NotImplementedError(f"Stream completed but isn't failed: {self.result()}")
+
+        # return False
+
+    def recreate_stream(self):
+        new_video_stream = VideoStream(
+            self.video_stream.streaming_service,
+            self.video_stream.video_id,
+            self.video_stream.capture_fps
+        )
+
+        self.video_stream = new_video_stream
