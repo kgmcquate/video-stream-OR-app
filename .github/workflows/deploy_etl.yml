@@ -39,4 +39,4 @@ jobs:
       - name: Copy to Airflow S3
         working-directory: ./video-stream-producer
         run: |
-          aws s3 cp --recursive src/ s3://data-zone-${AWS_ACCOUNT_ID}-${AWS_REGION}/airflow/dags/
+          aws s3 cp --recursive src/ s3://deployment-zone-${AWS_ACCOUNT_ID}-${AWS_REGION}/airflow/dags/
