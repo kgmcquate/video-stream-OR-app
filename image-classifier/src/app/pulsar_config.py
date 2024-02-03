@@ -16,8 +16,8 @@ pulsar_port = secret["pulsar_port"]
 
 broker_url = f'pulsar://{broker_host}:{pulsar_port}'
 
-raw_video_frames_topic_name = "raw-livestream-frames"
-processed_video_frames_topic_name = "processed-livestream-frames"
+raw_video_frames_topic_name = "raw-livestream-frames"  # "non-persistent://video_stream/video_stream/raw-livestream-frames"
+processed_video_frames_topic_name = "processed-livestream-frames" #non-persistent://video_stream/video_stream/processed-livestream-frames"
 
 # kafka_producer_config = {
 #     'bootstrap.servers': kafka_secret['bootstrap_servers'],

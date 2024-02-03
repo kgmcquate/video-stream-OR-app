@@ -71,6 +71,6 @@ def main(spark = SparkSession.builder.getOrCreate()):
         .option("checkpointLocation", f"s3://{data_bucket}/video_streams/processed_images/_checkpoints/")
         .start()
     )
-        
+
 if __name__ == "__main__":
     main()
