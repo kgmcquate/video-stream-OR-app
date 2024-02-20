@@ -1,0 +1,78 @@
+name: Deploy to Frontend
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+          - frontend/**
+env:
+  AWS_REGION: us-east-1
+  AWS_ACCOUNT_ID: 117819748843
+  DOMAIN_NAME: video-streams.kevin-mcquate.net
+  API_DOMAIN_NAME: video-streams-api.kevin-mcquate.net
+  PUBLIC_ZONE_BUCKET_NAME: public-zone-117819748843-us-east-1
+  PUBLIC_ZONE_PREFIX: ${{ github.event.repository.name }}
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  deploy:
+    name: Deploy 
+    runs-on: ubuntu-latest
+    environment: production
+    container:
+      image: public.ecr.aws/sam/build-nodejs18.x:latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    # - uses: actions/setup-node@v3
+    #   with:
+    #     node-version: 18
+    #     cache: 'npm'
+    #     cache-dependency-path: lake-freeze-frontend/package-lock.json
+    - name: npm install
+      run: npm install 
+
+    - name: react app env file
+      run: |
+        echo REACT_APP_VIDEO_STREAMS_API_URL="https://${API_DOMAIN_NAME}" >> .env
+      # echo PUBLIC_URL="${PUBLIC_ZONE_PREFIX}" >> .env
+
+    - name: React app deploy 
+      run: |
+        npx react-scripts build
+        aws s3 rm --recursive s3://${PUBLIC_ZONE_BUCKET_NAME}/${{ github.event.repository.name }}
+        aws s3 cp --recursive build/ s3://${PUBLIC_ZONE_BUCKET_NAME}/${{ github.event.repository.name }}
+
+    - name: SAM build
+      run: sam build
+      
+    - name: SAM deploy
+      run: >
+        sam deploy 
+        --stack-name video-streams-frontend
+        --region ${AWS_REGION}
+        --no-fail-on-empty-changeset
+        --capabilities CAPABILITY_AUTO_EXPAND
+        --s3-bucket deployment-zone-${AWS_ACCOUNT_ID}
+        --s3-prefix ${{ github.event.repository.name }}
+        --parameter-overrides 
+        DomainName=${DOMAIN_NAME}
+        Route53HostedZoneId=Z028090523Q7W6VMX59IC
+        DomainTLSCertificateArn=arn:aws:acm:us-east-1:117819748843:certificate/7adc6279-9f57-4747-a44c-e9234c77a4c3
+        PublicS3BucketName=${PUBLIC_ZONE_BUCKET_NAME}
+        PublicS3Prefix=${PUBLIC_ZONE_PREFIX}

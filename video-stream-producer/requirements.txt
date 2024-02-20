@@ -1,0 +1,12 @@
+pydantic
+urllib3
+boto3
+vidgear
+fastavro
+# confluent-kafka
+numpy
+opencv-python
+yt_dlp
+pulsar-client[avro]
+sqlalchemy==1.4.51
+psycopg2-binary

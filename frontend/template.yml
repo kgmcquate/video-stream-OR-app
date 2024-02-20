@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  DomainName:
+    Type: String
+
+  Route53HostedZoneId:
+    Type: String
+
+  DomainTLSCertificateArn:
+    Type: String
+
+  PublicS3BucketName:
+    Type: String
+
+  PublicS3Prefix:
+    Type: String
+
+Resources:
+  CfDistribution:
+    Type: "AWS::CloudFront::Distribution"
+    Metadata:
+      Comment: !Ref DomainName
+    Properties:
+      DistributionConfig:
+        Comment: !Ref DomainName
+        Aliases:
+          - !Sub ${DomainName}
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - 'HEAD'
+            - 'GET'
+          CachedMethods:
+            - 'HEAD'
+            - 'GET'
+          Compress: false
+          DefaultTTL: 86400
+          ForwardedValues:
+            Cookies:
+              Forward: 'none'
+            Headers:
+              - 'Origin'
+            QueryString: false
+          MaxTTL: 31536000
+          MinTTL: 86400
+          TargetOriginId: !Sub 's3-origin-${PublicS3BucketName}'
+          ViewerProtocolPolicy: 'redirect-to-https'
+        DefaultRootObject: 'index.html'
+        Enabled: true
+        HttpVersion: 'http1.1'
+        IPV6Enabled: false
+        ViewerCertificate:
+          AcmCertificateArn: !Ref DomainTLSCertificateArn
+          MinimumProtocolVersion: TLSv1.1_2016
+          SslSupportMethod: sni-only
+        Origins:
+          - DomainName: !Sub '${PublicS3BucketName}.s3.amazonaws.com'
+            Id: !Sub 's3-origin-${PublicS3BucketName}'
+            OriginPath: !Sub '/${PublicS3Prefix}'
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+        PriceClass: 'PriceClass_All'
+
+  DNSRecords: 
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      HostedZoneId: !Ref Route53HostedZoneId
+      RecordSets:
+        - Name: !Ref DomainName
+          Type: A
+          AliasTarget:
+            HostedZoneId: Z2FDTNDATAQYW2 #!Ref CfDistribution
+            DNSName: !GetAtt CfDistribution.DomainName

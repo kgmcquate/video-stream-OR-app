@@ -1,0 +1,11 @@
+fastapi
+pydantic
+mangum >= 0.17.0
+sqlalchemy
+psycopg2-binary
+boto3
+sqlmodel
+# googlemaps
+# uvicorn[standard]
+requests
+# geopy

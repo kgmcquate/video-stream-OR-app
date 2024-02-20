@@ -1,0 +1,110 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  DomainName:
+    Type: String
+    Default: video-streams-api.kevin-mcquate.net
+
+  DomainTLSCertificateARN:
+    Type: String
+    Default: arn:aws:acm:us-east-1:117819748843:certificate/8ad0dcca-7ad9-41ba-862d-75b7e4e8d6be
+
+  DomainHostedZoneId:
+    Type: String
+    Default: Z028090523Q7W6VMX59IC
+
+Globals:
+  Api:
+    Cors:
+      AllowMethods: "'GET,POST,OPTIONS'"
+      AllowHeaders: "'content-type'"
+      AllowOrigin: "'*'"
+
+Metadata:
+  Dockerfile: Dockerfile
+  DockerContext: .
+
+Resources:
+  LambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: video-streams-api
+      Runtime: python3.11
+      Architectures: [arm64]
+      CodeUri: .
+      # PackageType: Image
+      Handler: app.handler
+
+      Timeout: 360
+      MemorySize: 512
+      Role: !Sub arn:aws:iam::${AWS::AccountId}:role/lake-freeze-lambda-role
+
+      Events:
+        Root:
+          Type: Api
+          Properties:
+            Path: /
+            Method: ANY
+            RestApiId: !Ref ApiGateway
+        Api:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+            RestApiId: !Ref ApiGateway
+
+      # VpcConfig:
+      #   SecurityGroupIds:
+      #     - sg-e0fa90d6
+      #     - sg-06ccb1d8e6918a05c
+      #   SubnetIds:
+      #     - subnet-c9fca384
+      #     - subnet-3266ee6d
+      #     - subnet-29b33c4f
+
+  #     TLSCertificate:
+  #         Type: AWS::CertificateManager::Certificate
+  #         Properties:
+  #             DomainName: !Ref DomainName
+  #             ValidationMethod: DNS
+
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      #DisableExecuteApiEndpoint: true
+      Cors:
+        # AllowCredentials: true
+        AllowHeaders: "'GET,POST,OPTIONS'"
+        AllowMethods: "'*'"
+        AllowOrigin: "'*'"
+      Domain:
+        DomainName: !Ref DomainName
+        CertificateArn: !Ref DomainTLSCertificateARN
+        EndpointConfiguration: REGIONAL
+        Route53:
+          HostedZoneId: !Ref DomainHostedZoneId
+
+  #   DBProxy:
+  #     Type: AWS::RDS::DBProxy
+  #     Properties:
+  #         DBProxyName: rds-proxy
+  #         EngineFamily: POSTGRESQL
+  #         RoleArn: arn:aws:iam::117819748843:role/lake-freeze-lambda-role
+  #         RequireTLS: true
+  #         Auth:
+  #             - {AuthScheme: SECRETS, SecretArn: arn:aws:secretsmanager:us-east-1:117819748843:secret:rds-lake-freeze-credentials-5gwihC, IAMAuth: ENABLED}
+  #         VpcSubnetIds:
+  #             - subnet-c9fca384
+  #             - subnet-3266ee6d
+  #             - subnet-29b33c4f
+
+  # ProxyTargetGroup:
+  #     Type: AWS::RDS::DBProxyTargetGroup
+  #     Properties:
+  #         DbProxyName: !Ref DBProxy
+  #         TargetGroupName: default
+  #         InstanceIdentifiers:
+  #             - tf-20230418030022168000000001 # Name of your RDS instance
+  #     DependsOn: DBProxy

@@ -1,0 +1,42 @@
+name: Deploy video-stream-producer
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - video-stream-producer/**
+
+env:
+  AWS_REGION: "us-east-1"
+  AWS_ACCOUNT_ID: "117819748843"
+
+defaults:
+ run:
+  working-directory: video-stream-producer/
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-video-stream-producer:
+    name: Deploy video-stream-producer Docker Image
+    runs-on: ubuntu-latest
+    environment: production
+    # container:
+    #   image: public.ecr.aws/sam/build-python3.7:latest #continuumio/miniconda3 #public.ecr.aws/sam/build-python3.9:latest #continuumio/miniconda3 #public.ecr.aws/sam/build-python3.7:latest #public.ecr.aws/sam/build-python3.9:latest #amazonlinux:2 #
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Copy to Airflow S3
+        working-directory: ./video-stream-producer
+        run: |
+          aws s3 cp --recursive src/ s3://deployment-zone-${AWS_ACCOUNT_ID}/airflow/dags/

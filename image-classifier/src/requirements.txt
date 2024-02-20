@@ -1,0 +1,13 @@
+opencv-python-headless
+pydantic
+fastavro
+boto3
+pulsar
+requests
+pyarrow==11.0.0
+# torchvision
+# CPU versions to reduce image size
+# https://download.pytorch.org/whl/cpu/torch-1.13.1%2Bcpu-cp37-cp37m-linux_x86_64.whl#sha256=2dd7e5f584c7ea5d8f038fd1fa40465785f797df0c7d06c432f5e72d9817115a
+# https://download.pytorch.org/whl/cpu/torchvision-0.14.1%2Bcpu-cp37-cp37m-linux_x86_64.whl#sha256=6b40d371b80f16809ad5ced2fd8fd327c7a403a079eaa654c9da50bfaef73f78
+# torcj 1.13.1
+# torchvision-0.14.1

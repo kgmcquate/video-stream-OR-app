@@ -1,0 +1,4 @@
+urllib3
+fastavro
+boto3
+sqlalchemy==1.4.51

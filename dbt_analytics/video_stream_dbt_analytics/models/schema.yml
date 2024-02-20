@@ -1,0 +1,20 @@
+
+version: 2
+sources:
+  - name: video_stream
+    database: postgres
+    schema: public
+    tables:
+      - name: video_stream_objects_stats
+      - name: video_streams
+
+models:
+  - name: prefiltered_object_counts
+  - name: object_ranking
+    description: "Ranked object counts by video"
+  - name: overall_object_ranking
+  - name: object_counts_arrays
+  - name: object_ranking_arrays
+  - name: video_total_object_counts
+  - name: video_rankings
+
