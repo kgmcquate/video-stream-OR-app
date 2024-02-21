@@ -18,7 +18,7 @@ from .video_stream import VideoStream, StreamManager, StreamStatus
 
 
 VIDEO_ID_REFRESH_PERIOD = 10
-MAX_NUMBER_OF_STREAMS = 20
+MAX_NUMBER_OF_STREAMS = 25
 CAPTURE_FPS = 1 / 120
 VIDEO_SEGMENT_FPS = 1
 
