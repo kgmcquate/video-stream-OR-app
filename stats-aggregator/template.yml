@@ -94,7 +94,7 @@ Resources:
                                 --driver-memory 4G 
                                 --driver-cores 1
                                 --num-executors 1
-                                --executor-memory 8G
+                                --executor-memory 6G
                                 --executor-cores 1
                                 --conf spark.dynamicAllocation.enabled=false
                                 --conf spark.sql.adaptive.enabled=true
