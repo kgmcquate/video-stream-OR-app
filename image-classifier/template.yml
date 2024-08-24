@@ -126,3 +126,4 @@ Resources:
                                 # --conf spark.emr-serverless.driverEnv.PYSPARK_DRIVER_PYTHON=/home/hadoop/environment/bin/python3
                                 # --conf spark.emr-serverless.driverEnv.PYSPARK_PYTHON=/home/hadoop/environment/bin/python3
                                 # --conf spark.executorEnv.PYSPARK_PYTHON=/home/hadoop/environment/bin/python3
+

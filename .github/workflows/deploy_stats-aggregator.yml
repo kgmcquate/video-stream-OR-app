@@ -91,7 +91,7 @@ jobs:
         --stack-name stats-aggregator
         --region ${AWS_REGION}
         --capabilities CAPABILITY_AUTO_EXPAND
-        --s3-bucket deployment-zone-${AWS_ACCOUNT_ID}
+        --s3-bucket deployment-zone-${AWS_ACCOUNT_ID}-${AWS_REGION}
         --s3-prefix ${{ github.event.repository.name }}/stats-aggregator
 
 

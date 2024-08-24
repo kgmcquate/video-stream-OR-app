@@ -42,5 +42,5 @@ jobs:
         --region ${AWS_REGION}
         --no-fail-on-empty-changeset
         --capabilities CAPABILITY_AUTO_EXPAND
-        --s3-bucket deployment-zone-${AWS_ACCOUNT_ID}
+        --s3-bucket deployment-zone-${AWS_ACCOUNT_ID}-${AWS_REGION}
         --s3-prefix ${{ github.event.repository.name }}
