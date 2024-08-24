@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     container:
-      image: public.ecr.aws/sam/build-nodejs18.x:latest
+      image: public.ecr.aws/sam/build-nodejs20.x:latest
 
     steps:
     - name: Checkout
