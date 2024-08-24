@@ -59,7 +59,7 @@ jobs:
 
       - name: Copy Python files to S3 deployment zone
         run: |
-          aws s3 cp src/spark_entrypoint.py s3://deployment-zone-${AWS_ACCOUNT_ID}/
+          aws s3 cp src/spark_entrypoint.py s3://deployment-zone-${AWS_ACCOUNT_ID}-${AWS_REGION}/
 
   deploy-image-classifier-sam:
     name: Deploy SAM template

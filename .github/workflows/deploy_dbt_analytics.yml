@@ -33,4 +33,4 @@ jobs:
 
       - name: Copy to Airflow S3
         run: |
-          aws s3 cp --recursive ./  s3://deployment-zone-${AWS_ACCOUNT_ID}/airflow/dags/
+          aws s3 cp --recursive ./  s3://deployment-zone-${AWS_ACCOUNT_ID}-${AWS_REGION}/airflow/dags/

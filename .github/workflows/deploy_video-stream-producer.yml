@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   deploy-video-stream-producer:
-    name: Deploy video-stream-producer Docker Image
+    name: Deploy video-stream-producer Airflow DAG
     runs-on: ubuntu-latest
     environment: production
     # container:
@@ -39,4 +39,4 @@ jobs:
       - name: Copy to Airflow S3
         working-directory: ./video-stream-producer
         run: |
-          aws s3 cp --recursive src/ s3://deployment-zone-${AWS_ACCOUNT_ID}/airflow/dags/
+          aws s3 cp --recursive src/ s3://deployment-zone-${AWS_ACCOUNT_ID}-${AWS_REGION}/airflow/dags/
