@@ -1,8 +1,6 @@
 import requests
 import json
 import boto3
-import os
-
 from data_models import VideoStreamInfo
 
 YOUTUBE_API_BASE_URL = "https://www.googleapis.com/youtube/v3"
