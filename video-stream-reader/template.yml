@@ -99,7 +99,7 @@ Resources:
                                 --conf spark.dynamicAllocation.enabled=false
                                 --conf spark.sql.adaptive.enabled=true
                                 --jars https://repo1.maven.org/maven2/org/postgresql/postgresql/42.6.0/postgresql-42.6.0.jar
-                                --packages io.streamnative.connectors:pulsar-spark-connector_2.12:3.4.0.3
+                                --packages com.kgmcquate::spark-livestream-reader:0.2.0
                               "
                         }
                       },
