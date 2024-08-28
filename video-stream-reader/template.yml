@@ -20,7 +20,7 @@ Parameters:
 
   DockerImageUri:
     Type: String
-    Default: 117819748843.dkr.ecr.us-east-1.amazonaws.com/emr-serverless:stats-aggregator
+    Default: 117819748843.dkr.ecr.us-east-1.amazonaws.com/emr-serverless:video-stream-reader
 
   SecurityGroupIds:
     Type: CommaDelimitedList
