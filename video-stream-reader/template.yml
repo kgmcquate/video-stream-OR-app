@@ -14,7 +14,7 @@ Parameters:
     Type: String
     Default: deployment-zone-117819748843-us-east-1
 
-  EmrZone:
+  LogZone:
     Type: String
     Default: log-zone-117819748843-us-east-1
 
@@ -106,7 +106,7 @@ Resources:
                       "ConfigurationOverrides": {
                         "MonitoringConfiguration": {
                           "S3MonitoringConfiguration": {
-                            "LogUri": !Sub "s3://${EmrZone}/logging/"
+                            "LogUri": !Sub "s3://${LogZone}/logging/"
                           }
                         }
                       },
