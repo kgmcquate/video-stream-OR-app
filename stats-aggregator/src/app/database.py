@@ -5,9 +5,10 @@ import sqlalchemy
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import MetaData
 
-secret_arn = os.environ.get("DB_CREDS_SECRET_ARN", "arn:aws:secretsmanager:us-east-1:117819748843:secret:lake-freeze-db-creds")
+secret_arn = os.environ.get("DB_CREDS_SECRET_ARN", "arn:aws:secretsmanager:us-east-1:117819748843:secret:main-rds-db-creds")
 
-db_endpoint = os.environ.get("DB_ENDPOINT" , "lake-freeze-db.cu0bcthnum69.us-east-1.rds.amazonaws.com")
+db_endpoint = os.environ.get("DB_ENDPOINT" , "main-db.cu0bcthnum69.us-east-1.rds.amazonaws.com")
+
 
 video_streams_table = "video_streams"
 video_stream_objects_stats_table = "video_stream_objects_stats"

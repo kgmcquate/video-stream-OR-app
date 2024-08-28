@@ -4,7 +4,7 @@ from pyspark.sql.functions import udf, col, posexplode, explode
 from pyspark.sql.types import IntegerType, BinaryType, ArrayType
 import logging
 
-from .pulsar_config import token, broker_url, raw_video_frames_topic_name, processed_video_frames_topic_name
+from .kafka_config import bootstrap_servers, kafka_api_key, kafka_api_secret, processed_video_frames_topic_name
 from .records import RawImageRecord, ProcessedImage
 
 data_bucket = "data-zone-117819748843-us-east-1"
@@ -32,14 +32,11 @@ def main(spark = SparkSession.builder.getOrCreate()):
     df = (
         spark
         .readStream
-        .format("pulsar")
-        # .option("startingOffsets", "latest")
-        .option("service.url", broker_url)
-        # .option("admin.url", broker_url)
-        # .option("maxBytesPerTrigger", 1e6)
-        .option("pulsar.client.authPluginClassName","org.apache.pulsar.client.impl.auth.AuthenticationToken")
-        .option("pulsar.client.authParams", f"token:{token}")
-        .option("topic", raw_video_frames_topic_name)
+        .format("kafka")
+        .option("kafka.bootstrap.servers", bootstrap_servers)
+        .option("kafka.security.protocol", "SASL_SSL")
+        .option("kafka.sasl.jaas.config", f"org.apache.kafka.common.security.plain.PlainLoginModule required username='{kafka_api_key}' password='{kafka_api_secret}';")
+        .option("kafka.sasl.mechanism", "PLAIN")
         .load()
     )
 
@@ -54,10 +51,11 @@ def main(spark = SparkSession.builder.getOrCreate()):
         # .selectExpr("concat(__key, '__', pos) AS __key", "col AS value", "__eventTime")
         .writeStream
         .trigger(processingTime='30 seconds')
-        .format("pulsar")
-        .option("service.url", broker_url)
-        .option("pulsar.client.authPluginClassName","org.apache.pulsar.client.impl.auth.AuthenticationToken")
-        .option("pulsar.client.authParams", f"token:{token}")
+        .format("kafka")
+        .option("kafka.bootstrap.servers", bootstrap_servers)
+        .option("kafka.security.protocol", "SASL_SSL")
+        .option("kafka.sasl.jaas.config", f"org.apache.kafka.common.security.plain.PlainLoginModule required username='{kafka_api_key}' password='{kafka_api_secret}';")
+        .option("kafka.sasl.mechanism", "PLAIN")
         .option("topic", processed_video_frames_topic_name)
         .option("checkpointLocation", f"s3://{data_bucket}/video_streams/processed_images/_checkpoints/")
         .start()
