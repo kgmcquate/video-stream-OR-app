@@ -89,7 +89,7 @@ Resources:
                       "ExecutionRoleArn": !Ref ExecutionRoleArn,
                       "JobDriver": {
                         "SparkSubmit": {
-                            "EntryPoint": !Sub "s3://${DeploymentZone}/spark-livestream-reader/spark-livestream-reader.jar",
+                            "EntryPoint": !Sub "s3://${DeploymentZone}/video-stream-reader/video-stream-reader.jar",
                             "SparkSubmitParameters": !Sub "
                                 --driver-memory 4G 
                                 --driver-cores 1
