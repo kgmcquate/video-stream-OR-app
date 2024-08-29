@@ -62,10 +62,10 @@ Resources:
         Cpu: 20vCPU
         Disk: 500GB
         Memory: 64GB
-      ReleaseLabel: "emr-6.15.0"
+      ReleaseLabel: "emr-7.2.0"
       Type: Spark
-      ImageConfiguration:
-        ImageUri: !Ref DockerImageUri
+#      ImageConfiguration:
+#        ImageUri: !Ref DockerImageUri
       NetworkConfiguration:
         SecurityGroupIds: !Ref SecurityGroupIds
         SubnetIds: !Ref SubnetIds
@@ -89,7 +89,7 @@ Resources:
                       "ExecutionRoleArn": !Ref ExecutionRoleArn,
                       "JobDriver": {
                         "SparkSubmit": {
-                            "EntryPoint": !Sub "s3://${DeploymentZone}/spark_entrypoint.py",
+                            "EntryPoint": !Sub "s3://${DeploymentZone}/spark-livestream-reader/spark-livestream-reader.jar",
                             "SparkSubmitParameters": !Sub "
                                 --driver-memory 4G 
                                 --driver-cores 1
@@ -98,9 +98,6 @@ Resources:
                                 --executor-cores 1
                                 --conf spark.dynamicAllocation.enabled=false
                                 --conf spark.sql.adaptive.enabled=true
-                                --repositories https://maven.pkg.github.com/kgmcquate/spark-livestream-reader
-                                --jars https://repo1.maven.org/maven2/org/postgresql/postgresql/42.6.0/postgresql-42.6.0.jar
-                                --packages com.kgmcquate:spark-livestream-reader_2.13:0.2.0
                               "
                         }
                       },
