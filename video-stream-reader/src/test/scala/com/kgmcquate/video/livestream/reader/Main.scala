@@ -5,7 +5,7 @@ import org.apache.spark.sql.functions.{col, lit, struct, to_json}
 import org.apache.spark.sql.streaming.Trigger
 import KafkaConfig._
 
-class Main {
+object Main {
   def main(args: Array[String]): Unit = {
     val url = "https://www.youtube.com/watch?v=ydYDqZQpim8"
     val spark = SparkSession.builder().appName("VideoStreamReader").getOrCreate()
