@@ -98,8 +98,9 @@ Resources:
                                 --executor-cores 1
                                 --conf spark.dynamicAllocation.enabled=false
                                 --conf spark.sql.adaptive.enabled=true
+                                --repositories https://maven.pkg.github.com/kgmcquate/spark-livestream-reader
                                 --jars https://repo1.maven.org/maven2/org/postgresql/postgresql/42.6.0/postgresql-42.6.0.jar
-                                --packages com.kgmcquate::spark-livestream-reader:0.2.0
+                                --packages com.kgmcquate:spark-livestream-reader_2.13:0.2.0
                               "
                         }
                       },
