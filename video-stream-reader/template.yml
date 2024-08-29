@@ -98,6 +98,7 @@ Resources:
                                 --executor-cores 1
                                 --conf spark.dynamicAllocation.enabled=false
                                 --conf spark.sql.adaptive.enabled=true
+                                --class com.kgmcquate.video.livestream.reader.Main
                               "
                         }
                       },
