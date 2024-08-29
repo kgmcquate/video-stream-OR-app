@@ -11,8 +11,8 @@ val awsSdkVersion = "2.25.31"
 mainClass := Some("com.kgmcquate.video.livestream.reader.Main")
 
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-core" % sparkVersion,
-  "org.apache.spark" %% "spark-sql" % sparkVersion,
+  "org.apache.spark" %% "spark-core" % sparkVersion % "provided",
+  "org.apache.spark" %% "spark-sql" % sparkVersion % "provided",
   "org.apache.spark" %% "spark-sql-kafka-0-10" % sparkVersion,
   "org.apache.spark" %% "spark-streaming-kafka-0-10" % sparkVersion,
   "com.kgmcquate" %% "spark-livestream-reader" % "0.2.0",
@@ -24,7 +24,11 @@ libraryDependencies ++= Seq(
 
 import sbtassembly.AssemblyPlugin.autoImport.*
 
-assembly / assemblyMergeStrategy := (_ => MergeStrategy.first)
+assembly / assemblyMergeStrategy := {
+//  case PathList("META-INF", "io.netty.versions.properties") => MergeStrategy.concat
+//  case PathList("META-INF", "versions", "9", "module-info.class") => MergeStrategy.discard
+  case x => MergeStrategy.first // Custom default strategy
+}
 
 assembly / assemblyJarName  := "video-stream-reader.jar"
 
