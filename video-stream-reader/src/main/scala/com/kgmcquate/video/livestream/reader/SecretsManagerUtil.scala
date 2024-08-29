@@ -5,6 +5,7 @@ import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest
 import software.amazon.awssdk.services.secretsmanager.model.SecretsManagerException
+import spray.json.DefaultJsonProtocol.{StringJsonFormat, mapFormat}
 import spray.json._
 
 object SecretsManagerUtil {
