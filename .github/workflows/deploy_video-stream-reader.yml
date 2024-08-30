@@ -26,8 +26,8 @@ jobs:
     name: Deploy JAR
     runs-on: ubuntu-latest
     environment: production
-    # container:
-    #   image: public.ecr.aws/sam/build-python3.9:latest
+    container:
+      image: sbtscala/scala-sbt:eclipse-temurin-alpine-17.0.10_7_1.10.1_2.13.14
 
     steps:
       - name: Checkout
