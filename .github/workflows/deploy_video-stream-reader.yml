@@ -42,7 +42,8 @@ jobs:
 
       - name: Build JAR
         run: |
-          sbt  assembly
+          sbt assembly
+          apk add aws-cli
           aws s3 cp target/scala-*/*.jar s3://deployment-zone-${AWS_ACCOUNT_ID}-${AWS_REGION}/video-stream-reader/
 
   deploy-video-stream-reader-sam:
