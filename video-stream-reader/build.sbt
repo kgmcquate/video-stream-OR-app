@@ -1,5 +1,5 @@
 
-scalaVersion := "2.13.14"
+scalaVersion := "2.12.17"
 
 name := "video-stream-reader"
 organization := "com.kgmcquate"
@@ -11,11 +11,11 @@ val awsSdkVersion = "2.25.31"
 mainClass := Some("com.kgmcquate.video.livestream.reader.Main")
 
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-core" % sparkVersion, // % "provided",
-  "org.apache.spark" %% "spark-sql" % sparkVersion, // % "provided",
+  "org.apache.spark" %% "spark-core" % sparkVersion % "provided",
+  "org.apache.spark" %% "spark-sql" % sparkVersion % "provided",
   "org.apache.spark" %% "spark-sql-kafka-0-10" % sparkVersion,
   "org.apache.spark" %% "spark-streaming-kafka-0-10" % sparkVersion,
-  "com.kgmcquate" %% "spark-livestream-reader" % "0.4.0",
+  "com.kgmcquate" %% "spark-livestream-reader" % "0.5.0",
   "io.spray" %%  "spray-json" % "1.3.6",
   "software.amazon.awssdk" % "secretsmanager" % awsSdkVersion,
   "software.amazon.awssdk" % "auth" % awsSdkVersion,
