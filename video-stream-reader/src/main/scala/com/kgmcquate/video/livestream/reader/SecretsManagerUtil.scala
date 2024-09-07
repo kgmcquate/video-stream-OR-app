@@ -12,7 +12,7 @@ object SecretsManagerUtil {
   def getSecret(secretName: String, region: String): Map[String, String] = {
     val client = SecretsManagerClient.builder()
       .region(Region.of(region))
-      .credentialsProvider(DefaultCredentialsProvider.create())
+//      .credentialsProvider(DefaultCredentialsProvider.create())
       .build()
 
     try {
