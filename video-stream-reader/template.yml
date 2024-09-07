@@ -64,8 +64,8 @@ Resources:
         Memory: 64GB
       ReleaseLabel: "emr-7.2.0"
       Type: Spark
-     ImageConfiguration:
-       ImageUri: !Ref DockerImageUri
+      ImageConfiguration:
+        ImageUri: !Ref DockerImageUri
       NetworkConfiguration:
         SecurityGroupIds: !Ref SecurityGroupIds
         SubnetIds: !Ref SubnetIds
