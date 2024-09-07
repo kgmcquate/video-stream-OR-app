@@ -15,7 +15,7 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-sql" % sparkVersion % "provided",
   "org.apache.spark" %% "spark-sql-kafka-0-10" % sparkVersion,
   "org.apache.spark" %% "spark-streaming-kafka-0-10" % sparkVersion,
-  "com.kgmcquate" %% "spark-livestream-reader" % "0.12.0",
+  "com.kgmcquate" %% "spark-livestream-reader" % "0.13.0",
   "io.spray" %%  "spray-json" % "1.3.6",
   "software.amazon.awssdk" % "secretsmanager" % awsSdkVersion,
   "software.amazon.awssdk" % "auth" % awsSdkVersion,

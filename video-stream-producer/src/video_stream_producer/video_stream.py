@@ -16,7 +16,7 @@ import socket
 import os
 import logging
 from concurrent.futures import Future
-import pulsar
+# import pulsar
 import av
 import m3u8
 import streamlink
@@ -25,11 +25,14 @@ import requests
 import traceback
 import pprint
 
+from confluent_kafka import Producer
+
 from urllib.parse import urlunsplit, urlencode
 from urllib.error import HTTPError
 
 # from .kafka import kafka_producer_config, raw_video_frames_topic_name
-from .pulsar_config import broker_url, token, raw_video_frames_topic_name
+# from .pulsar_config import broker_url, token, raw_video_frames_topic_name
+# from .kafka_config import raw_video_frames_topic_name, kafka_api_key, kafka_api_secret, bootstrap_servers
 from .avro_schemas import raw_image_avro_schema
 
 
@@ -76,12 +79,17 @@ class VideoStream:
         params = {'v': self.video_id,}
         self.url = f'{base_url}/watch?{urlencode(params)}'
 
-        self.pulsar_client = pulsar.Client(
-            broker_url,
-            authentication = pulsar.AuthenticationToken(token)
-        )
+        
+        import socket
 
-        self.producer = self.pulsar_client.create_producer(raw_video_frames_topic_name)
+        # conf = {'bootstrap.servers': bootstrap_servers,
+        #         'client.id': socket.gethostname()}
+
+        # producer = Producer(conf)
+
+        # self.kafka_client = 
+
+        # self.producer = self.kafka_client.create_producer(raw_video_frames_topic_name)
 
 
     def get_frames_from_segment(self, video_bytes, segment_start_time: datetime):
@@ -202,13 +210,14 @@ class VideoStream:
 
         # logger.warn(f"writing {self.video_id}")
         # raise Exception("here")
-        self.producer.send(
-            bytes_writer.getvalue(),
-            event_timestamp=int(timestamp.timestamp() * 1e3),
-            # sequence_id=
-            partition_key=f"{self.video_id}-{timestamp.isoformat()}",
-            # ordering_key=str(int(timestamp.timestamp() * 1e3))
-        )
+        print(bytes_writer.getvalue())
+        # self.producer.send(
+        #     bytes_writer.getvalue(),
+        #     event_timestamp=int(timestamp.timestamp() * 1e3),
+        #     # sequence_id=
+        #     partition_key=f"{self.video_id}-{timestamp.isoformat()}",
+        #     # ordering_key=str(int(timestamp.timestamp() * 1e3))
+        # )
         
 
     def start_stream(self):
@@ -222,8 +231,9 @@ class VideoStream:
 
 
     def stop_stream(self):
-        self.producer.flush()
-        self.pulsar_client.close()
+        pass
+        # self.producer.flush()
+        # self.kafka_client.close()
         # self.stream.stop()
 
     def __enter__(self):
